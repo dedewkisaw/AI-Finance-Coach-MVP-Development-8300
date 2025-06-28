@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent spacebar from scrolling when chat input is focused */
+body.chat-input-focused {
+  overflow: hidden;
+}
+
+/* Ensure chat container doesn't interfere with page scroll */
+.chat-container {
+  position: relative;
+  z-index: 10;
+}
+
+.chat-container textarea:focus {
+  outline: none;
+}
+
+/* Prevent default spacebar behavior in chat */
+.chat-input {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Smooth scrolling for chat messages */
+.chat-container .overflow-y-auto {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection in chat buttons */
+.chat-container button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Custom scrollbar for chat */
+.chat-container .overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-container .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-container .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.chat-container .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

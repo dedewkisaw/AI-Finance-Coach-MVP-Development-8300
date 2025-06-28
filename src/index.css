@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom styles for feedback button positioning */
+.feedback-button-container {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 50;
+}
+
+/* Ensure feedback workflow appears above other elements */
+.quest-feedback-workflow {
+  z-index: 60 !important;
+}
+
+/* Mobile responsiveness for feedback button */
+@media (max-width: 768px) {
+  .feedback-button-container {
+    right: -5px;
+  }
+}
