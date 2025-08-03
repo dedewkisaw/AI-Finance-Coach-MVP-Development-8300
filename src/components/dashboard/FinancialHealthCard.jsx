@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import * as FiIcons from 'react-icons/fi'
 import SafeIcon from '../../common/SafeIcon'
 import { useFinance } from '../../contexts/FinanceContext'
+import toast from 'react-hot-toast'
 
 const { FiTrendingUp, FiTrendingDown, FiActivity, FiInfo, FiRefreshCw } = FiIcons
 
@@ -67,8 +68,10 @@ const FinancialHealthCard = () => {
     setIsRefreshing(true)
     try {
       await loadFinancialData()
+      toast.success('Financial health data refreshed')
     } catch (error) {
       console.error('Error refreshing health data:', error)
+      toast.error('Failed to refresh data')
     } finally {
       setIsRefreshing(false)
     }
@@ -97,6 +100,8 @@ const FinancialHealthCard = () => {
           <button
             onClick={() => setShowDetails(!showDetails)}
             className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            title={showDetails ? "Hide details" : "Show details"}
+            aria-label={showDetails ? "Hide financial details" : "Show financial details"}
           >
             <SafeIcon icon={FiInfo} className="w-4 h-4" />
           </button>
@@ -106,6 +111,8 @@ const FinancialHealthCard = () => {
             onClick={refreshHealth}
             disabled={isRefreshing}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+            title="Refresh financial data"
+            aria-label="Refresh financial health data"
           >
             <SafeIcon icon={FiRefreshCw} className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>

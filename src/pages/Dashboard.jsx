@@ -9,6 +9,7 @@ import AIChat from '../components/dashboard/AIChat';
 import QuickInsights from '../components/dashboard/QuickInsights';
 import PremiumUpsell from '../components/dashboard/PremiumUpsell';
 import DemoWalkthrough from '../components/demo/DemoWalkthrough';
+import DemoIndicator from '../components/demo/DemoIndicator';
 import {useFinance} from '../contexts/FinanceContext';
 import {useNavigate} from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -44,6 +45,10 @@ const Dashboard = () => {
     setShowDemoWalkthrough(false);
     navigate('/login');
   };
+  
+  const handleStartDemo = () => {
+    setShowDemoWalkthrough(true);
+  };
 
   if (loading) {
     return (
@@ -61,6 +66,9 @@ const Dashboard = () => {
       <DashboardHeader />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Demo Indicator */}
+        <DemoIndicator onStartDemo={handleStartDemo} />
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">

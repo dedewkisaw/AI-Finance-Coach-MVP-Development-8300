@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as FiIcons from 'react-icons/fi'
 import SafeIcon from '../../common/SafeIcon'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFinance } from '../../contexts/FinanceContext'
+import toast from 'react-hot-toast'
 
 const { FiX, FiCreditCard, FiDownload, FiRefreshCw, FiCalendar, FiDollarSign, FiZap } = FiIcons
 
@@ -11,6 +12,7 @@ const BillingModal = ({ isOpen, onClose }) => {
   const { userProfile } = useAuth()
   const { isPremium } = useFinance()
   const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   // Mock billing data
   const billingInfo = {
@@ -47,6 +49,7 @@ const BillingModal = ({ isOpen, onClose }) => {
 
   const handleUpgrade = () => {
     window.open('https://buy.stripe.com/test_00weVf5Mz8MRcye2ZcgjC00', '_blank')
+    toast.success('Opening payment page in new tab')
   }
 
   const handleManageBilling = () => {
@@ -54,12 +57,38 @@ const BillingModal = ({ isOpen, onClose }) => {
     // Simulate loading
     setTimeout(() => {
       setLoading(false)
-      alert('This would redirect to Stripe Customer Portal in a real app')
+      toast.success('Redirecting to Stripe Customer Portal')
     }, 1000)
   }
 
+  const handleRefresh = () => {
+    setRefreshing(true)
+    // Simulate refresh operation
+    setTimeout(() => {
+      setRefreshing(false)
+      toast.success('Billing information refreshed')
+    }, 1500)
+  }
+
   const downloadInvoice = (invoiceId) => {
-    alert(`Downloading invoice ${invoiceId}...`)
+    // Simulate invoice download
+    toast.success(`Downloading invoice ${invoiceId}...`)
+    
+    // In a real app, this would generate and download a PDF
+    setTimeout(() => {
+      const mockPdfBlob = new Blob(['Mock Invoice Data'], { type: 'application/pdf' })
+      const url = URL.createObjectURL(mockPdfBlob)
+      
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `invoice-${invoiceId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      
+      // Clean up
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 500)
   }
 
   return (
@@ -86,6 +115,7 @@ const BillingModal = ({ isOpen, onClose }) => {
               <button
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Close billing modal"
               >
                 <SafeIcon icon={FiX} className="w-5 h-5" />
               </button>
@@ -132,6 +162,7 @@ const BillingModal = ({ isOpen, onClose }) => {
                 <button
                   onClick={handleUpgrade}
                   className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+                  aria-label="Upgrade to premium"
                 >
                   <SafeIcon icon={FiZap} className="w-4 h-4" />
                   <span>Upgrade to Premium</span>
@@ -141,6 +172,7 @@ const BillingModal = ({ isOpen, onClose }) => {
                   onClick={handleManageBilling}
                   disabled={loading}
                   className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                  aria-label="Manage billing"
                 >
                   {loading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -152,12 +184,13 @@ const BillingModal = ({ isOpen, onClose }) => {
               )}
               
               <button
-                onClick={() => setLoading(true)}
-                disabled={loading}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                aria-label="Refresh billing information"
               >
-                <SafeIcon icon={FiRefreshCw} className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
+                <SafeIcon icon={FiRefreshCw} className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
             </div>
 
@@ -185,6 +218,7 @@ const BillingModal = ({ isOpen, onClose }) => {
                           onClick={() => downloadInvoice(invoice.id)}
                           className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                           title="Download invoice"
+                          aria-label={`Download invoice ${invoice.id}`}
                         >
                           <SafeIcon icon={FiDownload} className="w-4 h-4" />
                         </button>

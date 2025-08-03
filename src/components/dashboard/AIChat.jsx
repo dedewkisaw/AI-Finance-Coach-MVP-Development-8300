@@ -138,6 +138,7 @@ const AIChat = ({ onUpgradeClick }) => {
         timestamp: new Date()
       }
     ])
+    toast.success('Chat cleared')
   }
 
   const handleKeyPress = (e) => {
@@ -194,6 +195,7 @@ const AIChat = ({ onUpgradeClick }) => {
             onClick={clearChat}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors text-xs"
             title="Clear chat"
+            aria-label="Clear chat"
           >
             Clear
           </button>
@@ -201,6 +203,7 @@ const AIChat = ({ onUpgradeClick }) => {
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             title={isMinimized ? 'Expand' : 'Minimize'}
+            aria-label={isMinimized ? 'Expand chat' : 'Minimize chat'}
           >
             <SafeIcon icon={isMinimized ? FiMaximize2 : FiMinimize2} className="w-4 h-4" />
           </button>
@@ -285,6 +288,7 @@ const AIChat = ({ onUpgradeClick }) => {
                     onClick={() => handleSampleQuestion(question)}
                     disabled={isLoading}
                     className="w-full text-left text-sm p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                    aria-label={`Ask: ${question}`}
                   >
                     {question}
                   </button>
@@ -313,11 +317,13 @@ const AIChat = ({ onUpgradeClick }) => {
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm resize-none overflow-hidden chat-input"
               disabled={isLoading}
               style={{ minHeight: '40px', maxHeight: '80px', height: '40px' }}
+              aria-label="Chat message input"
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isLoading || !inputValue.trim()}
               className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 flex items-center justify-center"
+              aria-label="Send message"
             >
               <SafeIcon icon={FiSend} className="w-4 h-4" />
             </button>

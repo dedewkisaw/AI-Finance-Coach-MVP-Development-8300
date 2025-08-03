@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import * as FiIcons from 'react-icons/fi'
 import SafeIcon from '../../common/SafeIcon'
 import { useFinance } from '../../contexts/FinanceContext'
+import toast from 'react-hot-toast'
 
 const { FiAlertTriangle, FiTrendingUp, FiDollarSign, FiTarget, FiZap, FiX, FiCheckCircle } = FiIcons
 
 const QuickInsights = ({ onUpgradeClick }) => {
   const { insights, dismissInsight, isPremium, financialHealth } = useFinance()
   const [expandedInsight, setExpandedInsight] = useState(null)
+  const [dismissedInsights, setDismissedInsights] = useState([])
 
   // Generate insights based on real financial data
   const generateInsights = () => {
@@ -72,7 +74,10 @@ const QuickInsights = ({ onUpgradeClick }) => {
     return generatedInsights
   }
 
-  const allInsights = [...insights, ...generateInsights()]
+  // Filter out dismissed insights
+  const filteredInsights = [...insights, ...generateInsights()].filter(
+    insight => !dismissedInsights.includes(insight.id)
+  )
 
   const getInsightStyle = (type) => {
     const styles = {
@@ -94,23 +99,42 @@ const QuickInsights = ({ onUpgradeClick }) => {
     return colors[type] || colors.info
   }
 
-  const handleInsightAction = (insight) => {
+  const handleInsightAction = (insight, e) => {
+    e.stopPropagation();
+    
     if (insight.isPremium && !isPremium) {
-      onUpgradeClick()
+      if (onUpgradeClick) {
+        onUpgradeClick();
+      }
     } else {
-      setExpandedInsight(expandedInsight === insight.id ? null : insight.id)
+      setExpandedInsight(expandedInsight === insight.id ? null : insight.id);
     }
   }
 
   const handleDismissInsight = async (insightId, e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     try {
+      // Add to local dismissed array
+      setDismissedInsights(prev => [...prev, insightId]);
+      
+      // If the insight is from the context, also call the API method
       if (insights.find(i => i.id === insightId)) {
-        await dismissInsight(insightId)
+        await dismissInsight(insightId);
       }
+      
+      toast.success('Insight dismissed');
     } catch (error) {
-      console.error('Error dismissing insight:', error)
+      console.error('Error dismissing insight:', error);
+      toast.error('Failed to dismiss insight');
+      // Remove from local dismissed array if API call fails
+      setDismissedInsights(prev => prev.filter(id => id !== insightId));
     }
+  }
+  
+  const handleCompleteInsight = (insightId, e) => {
+    e.stopPropagation();
+    setDismissedInsights(prev => [...prev, insightId]);
+    toast.success('Insight marked as completed');
   }
 
   return (
@@ -129,7 +153,7 @@ const QuickInsights = ({ onUpgradeClick }) => {
 
       <div className="space-y-4">
         <AnimatePresence>
-          {allInsights.map((insight, index) => (
+          {filteredInsights.map((insight, index) => (
             <motion.div
               key={insight.id}
               initial={{ opacity: 0, x: -20 }}
@@ -137,7 +161,7 @@ const QuickInsights = ({ onUpgradeClick }) => {
               exit={{ opacity: 0, x: 20 }}
               transition={{ delay: index * 0.1 }}
               className={`p-4 rounded-xl border ${getInsightStyle(insight.type)} transition-all duration-300 hover:shadow-md cursor-pointer`}
-              onClick={() => handleInsightAction(insight)}
+              onClick={() => setExpandedInsight(expandedInsight === insight.id ? null : insight.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
@@ -151,12 +175,10 @@ const QuickInsights = ({ onUpgradeClick }) => {
                       <div className="flex items-center space-x-1">
                         {insight.actionable && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              // Mark as completed
-                            }}
+                            onClick={(e) => handleCompleteInsight(insight.id, e)}
                             className="p-1 hover:bg-white/20 rounded-full transition-colors"
                             title="Mark as completed"
+                            aria-label="Mark insight as completed"
                           >
                             <SafeIcon icon={FiCheckCircle} className="w-4 h-4" />
                           </button>
@@ -165,6 +187,7 @@ const QuickInsights = ({ onUpgradeClick }) => {
                           onClick={(e) => handleDismissInsight(insight.id, e)}
                           className="p-1 hover:bg-white/20 rounded-full transition-colors"
                           title="Dismiss"
+                          aria-label="Dismiss insight"
                         >
                           <SafeIcon icon={FiX} className="w-4 h-4" />
                         </button>
@@ -193,10 +216,8 @@ const QuickInsights = ({ onUpgradeClick }) => {
                     <div className="flex items-center justify-between mt-2">
                       <button
                         className={`text-sm font-medium hover:underline ${insight.type === 'premium' ? 'text-white' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleInsightAction(insight)
-                        }}
+                        onClick={(e) => handleInsightAction(insight, e)}
+                        aria-label={`${insight.action} insight`}
                       >
                         {insight.action}
                       </button>
@@ -212,6 +233,13 @@ const QuickInsights = ({ onUpgradeClick }) => {
             </motion.div>
           ))}
         </AnimatePresence>
+        
+        {filteredInsights.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>No insights available at the moment.</p>
+            <p className="text-sm">Check back later for new recommendations!</p>
+          </div>
+        )}
       </div>
 
       {/* Summary Stats */}
@@ -224,7 +252,7 @@ const QuickInsights = ({ onUpgradeClick }) => {
             <div className="text-xs text-gray-500">Total Balance</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-900">{allInsights.length}</div>
+            <div className="text-lg font-bold text-gray-900">{filteredInsights.length}</div>
             <div className="text-xs text-gray-500">Active Insights</div>
           </div>
           <div>

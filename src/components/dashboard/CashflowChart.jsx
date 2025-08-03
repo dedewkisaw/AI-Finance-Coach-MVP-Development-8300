@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { useFinance } from '../../contexts/FinanceContext';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const { FiTrendingUp, FiEye, FiLock, FiDownload, FiRefreshCw } = FiIcons;
 
@@ -11,6 +13,7 @@ const CashflowChart = () => {
   const [timeframe, setTimeframe] = useState('30');
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const navigate = useNavigate();
 
   // Mock data for demonstration
   const mockData = {
@@ -33,32 +36,34 @@ const CashflowChart = () => {
 
   const currentData = mockData[timeframe];
 
-  const handlePremiumFeature = async () => {
+  const handlePremiumFeature = () => {
     if (!isPremium) {
-      // Show premium modal or redirect
+      // Navigate to premium page
+      navigate('/premium');
+      toast.success('Redirecting to premium options');
       return;
     }
 
-    setIsLoading(true);
-    try {
-      await getCashflowPrediction();
-      setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Error getting cashflow prediction:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    refreshData();
   };
 
   const refreshData = () => {
     setIsLoading(true);
+    
+    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       setLastUpdated(new Date());
-    }, 1000);
+      toast.success('Cashflow predictions updated');
+    }, 1500);
   };
 
   const exportData = () => {
+    if (!isPremium) {
+      toast.error('Export is a premium feature');
+      return;
+    }
+    
     const csvContent = "data:text/csv;charset=utf-8," 
       + "Day,Balance,Predicted\n"
       + currentData.map(row => `${row.day},${row.balance},${row.predicted}`).join("\n");
@@ -70,6 +75,8 @@ const CashflowChart = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast.success(`Cashflow data for ${timeframe} days exported`);
   };
 
   return (
@@ -90,21 +97,28 @@ const CashflowChart = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={refreshData}
-            disabled={isLoading}
+            disabled={isLoading || !isPremium}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+            aria-label="Refresh cashflow data"
+            title={!isPremium ? "Premium feature" : "Refresh data"}
           >
             <SafeIcon icon={FiRefreshCw} className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={exportData}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={!isPremium}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+            aria-label="Export cashflow data"
+            title={!isPremium ? "Premium feature" : "Export data"}
           >
             <SafeIcon icon={FiDownload} className="w-4 h-4" />
           </button>
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            disabled={!isPremium}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Select timeframe"
           >
             <option value="30">30 Days</option>
             <option value="90">90 Days</option>
@@ -124,6 +138,7 @@ const CashflowChart = () => {
               <button
                 onClick={handlePremiumFeature}
                 className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                aria-label="Upgrade to premium"
               >
                 Upgrade Now
               </button>

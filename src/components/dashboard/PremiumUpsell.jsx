@@ -2,10 +2,14 @@ import React from 'react';
 import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
+import {useNavigate} from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const {FiZap, FiTrendingUp, FiBrain, FiTarget, FiArrowRight} = FiIcons;
 
 const PremiumUpsell = ({onUpgradeClick}) => {
+  const navigate = useNavigate();
+  
   const premiumFeatures = [
     {icon: FiBrain, text: 'Unlimited AI coaching'},
     {icon: FiTrendingUp, text: '90-day predictions'},
@@ -13,8 +17,22 @@ const PremiumUpsell = ({onUpgradeClick}) => {
   ];
 
   const handleUpgradeClick = () => {
-    // Open Stripe payment link in new tab
-    window.open('https://buy.stripe.com/test_00weVf5Mz8MRcye2ZcgjC00', '_blank');
+    // If parent provided an upgrade handler, use it first
+    if (onUpgradeClick) {
+      onUpgradeClick();
+      return;
+    }
+    
+    // Otherwise, navigate to premium page or open Stripe
+    try {
+      // Navigate to premium page
+      navigate('/premium');
+      toast.success('Redirecting to premium upgrade options');
+    } catch (error) {
+      // Fallback: open Stripe payment link in new tab
+      window.open('https://buy.stripe.com/test_00weVf5Mz8MRcye2ZcgjC00', '_blank');
+      toast.success('Opening payment page in new tab');
+    }
   };
 
   return (
@@ -56,6 +74,7 @@ const PremiumUpsell = ({onUpgradeClick}) => {
       <button
         onClick={handleUpgradeClick}
         className="w-full bg-white text-primary-600 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+        aria-label="Start free premium trial"
       >
         <span>Start Free Trial</span>
         <SafeIcon icon={FiArrowRight} className="w-4 h-4" />
